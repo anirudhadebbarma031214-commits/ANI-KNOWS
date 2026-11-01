@@ -242,8 +242,9 @@ app.delete("/api/servers/:id", async function (req, res) {
   } catch (err) { jsonError(res, err, "Could not delete server"); }
 });
 
-app.use(express.static(path.resolve(__dirname, ".."), { index: "index.html", dotfiles: "deny" }));
-app.get("*", function (_req, res) { res.sendFile(path.resolve(__dirname, "..", "index.html")); });
+app.get("/", function (_req, res) { res.sendFile(path.resolve(__dirname, "..", "index.html")); });
+app.get("/style.css", function (_req, res) { res.sendFile(path.resolve(__dirname, "..", "style.css")); });
+app.get("/script.js", function (_req, res) { res.sendFile(path.resolve(__dirname, "..", "script.js")); });
 app.listen(PORT, HOST, function () {
   console.log("ANI HOST listening on http://" + HOST + ":" + PORT);
   if (API_KEY.length < 32) console.warn("WARNING: set ANI_HOST_API_KEY to a random secret of at least 32 characters.");
