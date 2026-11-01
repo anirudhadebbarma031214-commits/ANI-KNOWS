@@ -1,19 +1,20 @@
 const $ = (id) => document.getElementById(id);
-let running = false;
-let startedAt = 0;
-let elapsedBefore = 0;
-let timer = null;
+const KEY_NAME = "ani-host-admin-key";
+let activeServerId = null;
+let activeServer = null;
+let apiKey = localStorage.getItem(KEY_NAME) || "";
 let toastTimer = null;
+let pollTimer = null;
+
 function showToast(message) {
   const toast = $("toast");
   toast.textContent = message;
   toast.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
 }
 function clock() {
-  const d = new Date();
-  return [d.getHours(), d.getMinutes(), d.getSeconds()].map(v => String(v).padStart(2, "0")).join(":");
+  return new Date().toLocaleTimeString([], { hour12: false });
 }
 function log(message, type = "normal") {
   const line = document.createElement("p");
@@ -27,76 +28,195 @@ function log(message, type = "normal") {
   $("consoleOutput").appendChild(line);
   $("consoleOutput").scrollTop = $("consoleOutput").scrollHeight;
 }
-function setStatus(isOnline) {
-  running = isOnline;
+async function api(path, options = {}) {
+  const headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+  if (apiKey) headers.Authorization = "Bearer " + apiKey;
+  const response = await fetch(path, Object.assign({}, options, { headers }));
+  const type = response.headers.get("content-type") || "";
+  const data = type.includes("application/json") ? await response.json() : await response.text();
+  if (!response.ok) {
+    const message = data && data.error ? data.error : ("Request failed (" + response.status + ")");
+    if (response.status === 401) {
+      apiKey = "";
+      localStorage.removeItem(KEY_NAME);
+      updateConnection(false, "Sign in required");
+    }
+    throw new Error(message);
+  }
+  return data;
+}
+function updateConnection(connected, label) {
+  const btn = $("loginBtn");
+  btn.textContent = connected ? "Admin connected ✓" : (label || "Sign in ↗");
+  btn.title = connected ? "Click to sign out" : "Connect to your ANI HOST backend";
+}
+function setStatus(state, statusText) {
+  const online = state === "running";
+  const starting = state === "created" || state === "restarting";
   const status = $("serverStatus");
-  status.className = "status " + (isOnline ? "status-online" : "status-offline");
-  status.innerHTML = "<i></i> " + (isOnline ? "Online (demo)" : "Offline");
-  $("startBtn").disabled = isOnline;
-  $("startBtn").style.opacity = isOnline ? ".5" : "1";
-  $("players").innerHTML = isOnline ? "0 <small>/ 20</small>" : "0 <small>/ 20</small>";
-  $("memory").innerHTML = isOnline ? "512 <small>MB / 2 GB</small>" : "0 <small>MB / 2 GB</small>";
-  if (isOnline) {
-    startedAt = Date.now();
-    timer = setInterval(() => {
-      const seconds = Math.floor(elapsedBefore + (Date.now() - startedAt) / 1000);
-      $("uptime").textContent = [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(v => String(v).padStart(2, "0")).join(":");
-    }, 1000);
-  } else {
-    clearInterval(timer);
-    timer = null;
-    elapsedBefore = 0;
-    $("uptime").textContent = "00:00:00";
+  status.className = "status " + (online ? "status-online" : "status-offline");
+  status.innerHTML = "<i></i> " + (statusText || (online ? "Online" : starting ? "Starting" : "Offline"));
+  $("startBtn").disabled = online || starting;
+  $("startBtn").style.opacity = online || starting ? ".5" : "1";
+  $("stopBtn").disabled = !online;
+  $("restartBtn").disabled = !online;
+  $("players").innerHTML = online ? "Live <small>/ 20 max</small>" : "0 <small>/ 20 max</small>";
+  $("memory").innerHTML = activeServer ? activeServer.memoryMb + " <small>MB allocated</small>" : "— <small>not connected</small>";
+}
+function selectServer(server) {
+  activeServer = server;
+  activeServerId = server ? server.id : null;
+  if (!server) {
+    $("serverStatus").className = "status status-offline";
+    $("serverStatus").innerHTML = "<i></i> Not connected";
+    $("players").innerHTML = "— <small>/ 20 max</small>";
+    $("memory").innerHTML = "— <small>not connected</small>";
+    $("uptime").textContent = "--:--:--";
+    $("copyAddress").innerHTML = "No server selected <b>▢</b>";
+    $("demoNote").textContent = "CONNECT TO THE BACKEND TO MANAGE REAL MINECRAFT SERVERS.";
+    return;
+  }
+  $("demoNote").textContent = "REAL SERVER · " + server.id.slice(0, 8).toUpperCase();
+  $("server-title-name").textContent = server.name;
+  $("server-title-software").textContent = "Java Edition · " + server.software + " " + server.version;
+  $("copyAddress").innerHTML = (server.address || "Port " + (server.port || "pending")) + " <b>▢</b>";
+  setStatus(server.state, server.status);
+  $("uptime").textContent = server.state === "running" ? "RUNNING" : "OFFLINE";
+}
+async function refreshServers(quiet = false) {
+  if (!apiKey) return;
+  try {
+    const data = await api("/api/servers");
+    updateConnection(true);
+    const servers = data.servers || [];
+    if (!servers.length) {
+      selectServer(null);
+      log("Connected. No servers created yet.", "system");
+      return;
+    }
+    let server = servers.find(s => s.id === activeServerId) || servers[0];
+    selectServer(server);
+    if (!quiet) log("Loaded " + servers.length + " real server(s) from Docker.", "system");
+  } catch (err) {
+    if (!quiet) { log(err.message, "error"); showToast(err.message); }
   }
 }
-$("startBtn").addEventListener("click", () => {
-  if (running) return;
-  setStatus(true);
-  log("[Server thread/INFO]: Starting demo server...", "system");
-  setTimeout(() => { if (running) log("[Server thread/INFO]: Done! For demo purposes only."); }, 700);
-  showToast("Demo server started — no real Minecraft process was launched.");
-});
-$("stopBtn").addEventListener("click", () => {
-  if (!running) { showToast("The demo server is already offline."); return; }
-  setStatus(false);
-  log("[Server thread/INFO]: Demo server stopped.", "system");
-  showToast("Demo server stopped.");
-});
-$("restartBtn").addEventListener("click", () => {
-  if (!running) { showToast("Start the demo server before restarting."); return; }
-  setStatus(false);
-  log("[ANI]: Restarting demo server...", "system");
-  setTimeout(() => { setStatus(true); log("[Server thread/INFO]: Demo server restarted.", "system"); }, 850);
-  showToast("Restarting demo server...");
-});
-document.querySelectorAll(".software-card").forEach(card => card.addEventListener("click", () => {
-  document.querySelectorAll(".software-card").forEach(c => c.classList.remove("selected"));
-  card.classList.add("selected");
-  $("selectedSoftware").textContent = card.dataset.software;
-  document.querySelector(".server-title p").textContent = "Java Edition · " + card.dataset.software + " 1.21.4";
-  log("[ANI]: Selected software " + card.dataset.software + " (UI preview).");
-}));
-$("copyAddress").addEventListener("click", async () => {
-  const address = "ani-host.example.net";
-  try { await navigator.clipboard.writeText(address); showToast("Demo address copied."); }
-  catch { showToast("Demo address: " + address); }
-});
-$("createBtn").addEventListener("click", () => showToast("Server creation wizard is planned for the backend phase."));
-$("loginBtn").addEventListener("click", () => showToast("Account sign-in will be added with authentication setup."));
-$("clearConsole").addEventListener("click", () => { $("consoleOutput").replaceChildren(); log("Console output cleared.", "system"); });
-$("commandForm").addEventListener("submit", event => {
+async function connect() {
+  if (apiKey) {
+    apiKey = "";
+    localStorage.removeItem(KEY_NAME);
+    clearInterval(pollTimer);
+    updateConnection(false, "Sign in ↗");
+    log("Signed out of the admin panel.");
+    selectServer(null);
+    showToast("Signed out. Your Minecraft containers keep running.");
+    return;
+  }
+  const key = prompt("Enter the ANI HOST admin API key from your private server's .env file:");
+  if (!key) return;
+  apiKey = key.trim();
+  try {
+    await api("/api/servers");
+    localStorage.setItem(KEY_NAME, apiKey);
+    updateConnection(true);
+    await refreshServers();
+    clearInterval(pollTimer);
+    pollTimer = setInterval(() => refreshServers(true), 12000);
+    log("Secure API connection established.", "system");
+    showToast("Connected to your real server backend.");
+  } catch (err) {
+    apiKey = "";
+    localStorage.removeItem(KEY_NAME);
+    updateConnection(false, "Sign in ↗");
+    showToast("Connection failed: " + err.message);
+    log("Backend connection failed: " + err.message, "error");
+  }
+}
+async function serverAction(action) {
+  if (!apiKey) { showToast("Click Sign in and connect your backend first."); return; }
+  if (!activeServerId) { showToast("Create or select a server first."); return; }
+  try {
+    log("Sending real " + action + " request to Docker...", "system");
+    const result = await api("/api/servers/" + activeServerId + "/" + action, { method: "POST", body: "{}" });
+    log(result.message || ("Server " + action + " requested."), "system");
+    showToast(result.message || "Request sent.");
+    await refreshServers(true);
+    if (action === "start" || action === "restart") setTimeout(() => loadLogs(true), 3500);
+  } catch (err) { log(err.message, "error"); showToast(err.message); }
+}
+async function createServer() {
+  if (!apiKey) { showToast("Sign in to your private backend first."); return; }
+  const name = prompt("Name your Minecraft server:", "My Survival World");
+  if (!name) return;
+  const selected = $("selectedSoftware").textContent.toUpperCase();
+  const version = prompt("Minecraft version (example: 1.21.4 or LATEST):", "1.21.4");
+  if (!version) return;
+  const memoryText = prompt("RAM for this server in MB (your backend sets the allowed range):", "2048");
+  if (!memoryText) return;
+  try {
+    showToast("Creating real Docker container… first setup may download a large image.");
+    const data = await api("/api/servers", { method: "POST", body: JSON.stringify({ name, software: selected, version, memoryMb: Number(memoryText) }) });
+    activeServerId = data.server.id;
+    log(data.message, "system");
+    await refreshServers();
+    showToast("Server container created. Press Start to launch Minecraft.");
+  } catch (err) { log(err.message, "error"); showToast(err.message); }
+}
+async function loadLogs(quiet = false) {
+  if (!apiKey || !activeServerId) return;
+  try {
+    const output = await api("/api/servers/" + activeServerId + "/logs");
+    const lines = String(output).split(/\r?\n/).filter(Boolean).slice(-80);
+    $("consoleOutput").replaceChildren();
+    if (!lines.length) log("No server logs yet. Start the server to see startup output.");
+    lines.forEach(line => log(line));
+  } catch (err) { if (!quiet) showToast(err.message); }
+}
+async function sendCommand(event) {
   event.preventDefault();
   const input = $("commandInput");
   const command = input.value.trim();
   if (!command) return;
-  log("> " + command, "system");
-  const normalized = command.toLowerCase();
-  if (normalized === "help") log("Demo commands: help, list, tps, say <message>, status");
-  else if (normalized === "list") log("There are 0 of a maximum of 20 players online.");
-  else if (normalized === "tps") log(running ? "TPS (demo): 20.0" : "Server is offline.");
-  else if (normalized === "status") log(running ? "Demo server status: online" : "Demo server status: offline");
-  else if (normalized.startsWith("say ")) log("[Server]: " + command.slice(4));
-  else log("Unknown demo command. Type help for available commands.", "error");
   input.value = "";
+  if (!apiKey || !activeServerId) { log("Sign in and select a real server before using the console.", "error"); return; }
+  log("> " + command, "system");
+  try {
+    const result = await api("/api/servers/" + activeServerId + "/command", { method: "POST", body: JSON.stringify({ command }) });
+    if (result.output) log(result.output);
+    else log("Command sent to the server.", "system");
+    setTimeout(() => loadLogs(true), 500);
+  } catch (err) { log(err.message, "error"); }
+}
+$("startBtn").addEventListener("click", () => serverAction("start"));
+$("stopBtn").addEventListener("click", () => serverAction("stop"));
+$("restartBtn").addEventListener("click", () => serverAction("restart"));
+$("createBtn").addEventListener("click", createServer);
+$("loginBtn").addEventListener("click", connect);
+$("copyAddress").addEventListener("click", async () => {
+  if (!activeServer || !activeServer.address || activeServer.address.includes("YOUR_SERVER_IP")) {
+    showToast("Set PUBLIC_SERVER_HOST to your public IP or DNS name in .env first.");
+    return;
+  }
+  try { await navigator.clipboard.writeText(activeServer.address); showToast("Minecraft address copied."); }
+  catch { showToast("Address: " + activeServer.address); }
 });
+$("clearConsole").addEventListener("click", () => { $("consoleOutput").replaceChildren(); log("Console display cleared.", "system"); });
+$("commandForm").addEventListener("submit", sendCommand);
+document.querySelectorAll(".software-card").forEach(card => card.addEventListener("click", () => {
+  document.querySelectorAll(".software-card").forEach(c => c.classList.remove("selected"));
+  card.classList.add("selected");
+  $("selectedSoftware").textContent = card.dataset.software;
+  log("Selected software: " + card.dataset.software + ". New servers use this selection.");
+}));
 $("year").textContent = new Date().getFullYear();
+updateConnection(Boolean(apiKey), apiKey ? "Admin connected ✓" : "Sign in ↗");
+if (apiKey) {
+  refreshServers().then(() => {
+    clearInterval(pollTimer);
+    pollTimer = setInterval(() => refreshServers(true), 12000);
+  });
+}
+fetch("/api/health").then(r => r.json()).then(data => {
+  if (data.docker === "connected") log("Backend health check: Docker connected.", "system");
+  else log("Backend health check: " + (data.error || "Docker unavailable"), "error");
+}).catch(() => log("Backend API not detected. Run the panel with Docker Compose to enable real servers.", "error"));
