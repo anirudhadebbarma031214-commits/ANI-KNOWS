@@ -201,6 +201,7 @@ $("copyAddress").addEventListener("click", async () => {
   catch { showToast("Address: " + activeServer.address); }
 });
 $("clearConsole").addEventListener("click", () => { $("consoleOutput").replaceChildren(); log("Console display cleared.", "system"); });
+$("refreshLogs").addEventListener("click", () => loadLogs(false));
 $("commandForm").addEventListener("submit", sendCommand);
 document.querySelectorAll(".software-card").forEach(card => card.addEventListener("click", () => {
   document.querySelectorAll(".software-card").forEach(c => c.classList.remove("selected"));
