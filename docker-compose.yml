@@ -1,0 +1,25 @@
+services:
+  ani-host:
+    build: .
+    container_name: ani-host-panel
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      ANI_HOST_API_KEY: ${ANI_HOST_API_KEY:?Set ANI_HOST_API_KEY in .env}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      PUBLIC_SERVER_HOST: ${PUBLIC_SERVER_HOST:-YOUR_SERVER_IP}
+      MAX_SERVERS: ${MAX_SERVERS:-3}
+      MIN_MEMORY_MB: ${MIN_MEMORY_MB:-1024}
+      MAX_MEMORY_MB: ${MAX_MEMORY_MB:-4096}
+      SERVER_PORT_START: ${SERVER_PORT_START:-25565}
+      SERVER_PORT_END: ${SERVER_PORT_END:-25575}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/app/data
+    # Docker socket access is effectively host-root access. Keep this panel private.
+    security_opt:
+      - no-new-privileges:true
