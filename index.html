@@ -16,7 +16,7 @@
   <header class="topbar">
     <a class="brand" href="#" aria-label="ANI HOST home"><span class="brand-mark">A<span>•</span></span><span>ANI<span class="brand-light">HOST</span></span></a>
     <nav><a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#software">Software</a></nav>
-    <button class="button button-quiet" id="loginBtn">Sign in <span>↗</span></button>
+    <button class="button button-quiet" id="loginBtn">Sign in ↗</button>
   </header>
   <main>
     <section class="hero">
@@ -33,17 +33,17 @@
       <div class="dashboard-grid">
         <article class="server-card featured-server">
           <div class="card-top"><div class="server-icon grass-icon">▦</div><span class="status status-offline" id="serverStatus"><i></i> Offline</span></div>
-          <div class="server-title"><div><h3>My Survival World</h3><p>Java Edition · Paper 1.21.4</p></div><button class="dots" aria-label="More options">•••</button></div>
-          <div class="server-address"><span>SERVER ADDRESS</span><button id="copyAddress">ani-host.example.net <b>▢</b></button></div>
+          <div class="server-title"><div><h3 id="server-title-name">No server selected</h3><p id="server-title-software">Connect to your server host</p></div><button class="dots" id="refreshLogs" aria-label="Refresh server logs">↻</button></div>
+          <div class="server-address"><span>SERVER ADDRESS</span><button id="copyAddress">No server selected <b>▢</b></button></div>
           <div class="server-metrics"><div><span>PLAYERS</span><strong id="players">0 <small>/ 20</small></strong></div><div><span>MEMORY</span><strong id="memory">0 <small>MB / 2 GB</small></strong></div><div><span>UPTIME</span><strong id="uptime">00:00:00</strong></div></div>
           <div class="server-actions"><button class="button button-primary" id="startBtn">▶ Start server</button><button class="button button-secondary" id="restartBtn">↻ Restart</button><button class="button button-secondary" id="stopBtn">■ Stop</button></div>
-          <p class="demo-note">DEMO PREVIEW · Controls simulate a server state only.</p>
+          <p class="demo-note" id="demoNote">CONNECT TO THE BACKEND TO MANAGE REAL MINECRAFT SERVERS.</p>
         </article>
         <article class="console-card">
-          <div class="console-header"><div><span class="console-dot"></span><h3>Live console</h3></div><span class="mono">CONSOLE / 01</span></div>
-          <div class="console-output" id="consoleOutput" aria-live="polite"><p><span class="log-time">15:00:01</span> <span class="log-system">[ANI]</span> Dashboard initialized.</p><p><span class="log-time">15:00:02</span> Waiting for server action...</p><p class="log-muted"># Start the demo server to see events.</p></div>
-          <form id="commandForm" class="command-form"><span>›</span><input id="commandInput" placeholder="Type a demo command..." aria-label="Demo console command"><button aria-label="Send command">↵</button></form>
-          <div class="console-footer"><span><i class="status-dot"></i> CONSOLE READY</span><button id="clearConsole">Clear output</button></div>
+          <div class="console-header"><div><span class="console-dot"></span><h3>Live console</h3></div><span class="mono">LIVE SERVER LOGS</span></div>
+          <div class="console-output" id="consoleOutput" aria-live="polite"><p class="log-muted"># Sign in to your private backend to view real Minecraft logs.</p></div>
+          <form id="commandForm" class="command-form"><span>›</span><input id="commandInput" placeholder="Run a real server command..." aria-label="Minecraft server command"><button aria-label="Send command">↵</button></form>
+          <div class="console-footer"><span><i class="status-dot"></i> DOCKER CONSOLE</span><button id="clearConsole">Clear output</button></div>
         </article>
       </div>
     </section>
@@ -57,12 +57,12 @@
         <button class="software-card" data-software="Forge"><span class="software-symbol forge">⚒</span><span><strong>Forge</strong><small>Big mod collections</small></span><span class="select-mark">✓</span></button>
         <button class="software-card" data-software="Purpur"><span class="software-symbol purpur">✦</span><span><strong>Purpur</strong><small>Customizable gameplay</small></span><span class="select-mark">✓</span></button>
       </div>
-      <div class="selection-info"><span>SELECTED SOFTWARE</span><strong id="selectedSoftware">Paper</strong><span class="selection-tag">UI PREVIEW</span></div>
+      <div class="selection-info"><span>SELECTED SOFTWARE</span><strong id="selectedSoftware">Paper</strong><span class="selection-tag">SERVER SOFTWARE</span></div>
     </section>
 
     <section class="section features-section" id="features">
       <div class="eyebrow">BUILT FOR YOUR NEXT ADVENTURE / 03</div><h2>Less setup.<br><span>More Minecraft.</span></h2>
-      <div class="features-grid"><article><span>01 /</span><h3>One clear dashboard</h3><p>Keep server status, player slots, memory and console together in one focused view.</p></article><article><span>02 /</span><h3>Java & Bedrock</h3><p>A planned home for both editions, so friends can connect from more devices.</p></article><article><span>03 /</span><h3>Mods your way</h3><p>Choose from popular server software and make the world yours.</p></article><article><span>04 /</span><h3>Control your world</h3><p>Future-ready areas for backups, files, settings, player lists and server logs.</p></article></div>
+      <div class="features-grid"><article><span>01 /</span><h3>One clear dashboard</h3><p>Keep server status, player slots, memory and console together in one focused view.</p></article><article><span>02 /</span><h3>Java & Bedrock</h3><p>A planned home for both editions, so friends can connect from more devices.</p></article><article><span>03 /</span><h3>Mods your way</h3><p>Choose from popular server software and make the world yours.</p></article><article><span>04 /</span><h3>Control your world</h3><p>Real start/stop controls, persistent Docker world storage and a command/log API. Backups and file manager are future work.</p></article></div>
     </section>
     <section class="cta"><div><div class="eyebrow">THE NEXT CHAPTER IS YOURS</div><h2>Ready to build<br>your world?</h2></div><a href="#dashboard" class="button button-primary">Open dashboard <span>↑</span></a></section>
   </main>
