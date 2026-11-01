@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="ANI HOST — your Minecraft server, your rules.">
+  <title>ANI HOST — Minecraft Hosting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="ANI HOST home"><span class="brand-mark">A<span>•</span></span><span>ANI<span class="brand-light">HOST</span></span></a>
+    <nav><a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#software">Software</a></nav>
+    <button class="button button-quiet" id="loginBtn">Sign in <span>↗</span></button>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="eyebrow"><span class="pulse"></span> YOUR WORLD. YOUR RULES.</div>
+      <h1>Your Minecraft<br><span>world starts here.</span></h1>
+      <p class="hero-copy">A clean, powerful home for your Minecraft servers. Pick your software, manage your world, and bring your squad together.</p>
+      <div class="hero-actions"><a class="button button-primary" href="#dashboard">Explore dashboard <span>→</span></a><a class="text-link" href="#features">See what’s inside <span>↓</span></a></div>
+      <div class="hero-stats"><div><strong>JAVA + BEDROCK</strong><small>Play your way</small></div><div><strong>MOD-READY</strong><small>Build your own rules</small></div><div><strong>MADE FOR PLAYERS</strong><small>Simple by design</small></div></div>
+      <div class="hero-orb"><div class="orb-ring ring-a"></div><div class="orb-ring ring-b"></div><div class="orb-core"><span>ANI</span><b>HOST</b></div><div class="orb-dot dot-a"></div><div class="orb-dot dot-b"></div><div class="orb-dot dot-c"></div></div>
+    </section>
+
+    <section class="section dashboard-section" id="dashboard">
+      <div class="section-heading"><div><div class="eyebrow">CONTROL CENTER / 01</div><h2>Your servers, <span>one place.</span></h2></div><button class="button button-primary" id="createBtn">＋ New server</button></div>
+      <div class="dashboard-grid">
+        <article class="server-card featured-server">
+          <div class="card-top"><div class="server-icon grass-icon">▦</div><span class="status status-offline" id="serverStatus"><i></i> Offline</span></div>
+          <div class="server-title"><div><h3>My Survival World</h3><p>Java Edition · Paper 1.21.4</p></div><button class="dots" aria-label="More options">•••</button></div>
+          <div class="server-address"><span>SERVER ADDRESS</span><button id="copyAddress">ani-host.example.net <b>▢</b></button></div>
+          <div class="server-metrics"><div><span>PLAYERS</span><strong id="players">0 <small>/ 20</small></strong></div><div><span>MEMORY</span><strong id="memory">0 <small>MB / 2 GB</small></strong></div><div><span>UPTIME</span><strong id="uptime">00:00:00</strong></div></div>
+          <div class="server-actions"><button class="button button-primary" id="startBtn">▶ Start server</button><button class="button button-secondary" id="restartBtn">↻ Restart</button><button class="button button-secondary" id="stopBtn">■ Stop</button></div>
+          <p class="demo-note">DEMO PREVIEW · Controls simulate a server state only.</p>
+        </article>
+        <article class="console-card">
+          <div class="console-header"><div><span class="console-dot"></span><h3>Live console</h3></div><span class="mono">CONSOLE / 01</span></div>
+          <div class="console-output" id="consoleOutput" aria-live="polite"><p><span class="log-time">15:00:01</span> <span class="log-system">[ANI]</span> Dashboard initialized.</p><p><span class="log-time">15:00:02</span> Waiting for server action...</p><p class="log-muted"># Start the demo server to see events.</p></div>
+          <form id="commandForm" class="command-form"><span>›</span><input id="commandInput" placeholder="Type a demo command..." aria-label="Demo console command"><button aria-label="Send command">↵</button></form>
+          <div class="console-footer"><span><i class="status-dot"></i> CONSOLE READY</span><button id="clearConsole">Clear output</button></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="software">
+      <div class="section-heading"><div><div class="eyebrow">MAKE IT YOURS / 02</div><h2>Choose your <span>server software.</span></h2></div><p class="heading-copy">From classic survival to fully modded adventures.</p></div>
+      <div class="software-grid">
+        <button class="software-card selected" data-software="Paper"><span class="software-symbol">P</span><span><strong>Paper</strong><small>Optimized multiplayer</small></span><span class="select-mark">✓</span></button>
+        <button class="software-card" data-software="Vanilla"><span class="software-symbol vanilla">V</span><span><strong>Vanilla</strong><small>Original Minecraft</small></span><span class="select-mark">✓</span></button>
+        <button class="software-card" data-software="Fabric"><span class="software-symbol fabric">F</span><span><strong>Fabric</strong><small>Lightweight mod loader</small></span><span class="select-mark">✓</span></button>
+        <button class="software-card" data-software="Forge"><span class="software-symbol forge">⚒</span><span><strong>Forge</strong><small>Big mod collections</small></span><span class="select-mark">✓</span></button>
+        <button class="software-card" data-software="Purpur"><span class="software-symbol purpur">✦</span><span><strong>Purpur</strong><small>Customizable gameplay</small></span><span class="select-mark">✓</span></button>
+      </div>
+      <div class="selection-info"><span>SELECTED SOFTWARE</span><strong id="selectedSoftware">Paper</strong><span class="selection-tag">UI PREVIEW</span></div>
+    </section>
+
+    <section class="section features-section" id="features">
+      <div class="eyebrow">BUILT FOR YOUR NEXT ADVENTURE / 03</div><h2>Less setup.<br><span>More Minecraft.</span></h2>
+      <div class="features-grid"><article><span>01 /</span><h3>One clear dashboard</h3><p>Keep server status, player slots, memory and console together in one focused view.</p></article><article><span>02 /</span><h3>Java & Bedrock</h3><p>A planned home for both editions, so friends can connect from more devices.</p></article><article><span>03 /</span><h3>Mods your way</h3><p>Choose from popular server software and make the world yours.</p></article><article><span>04 /</span><h3>Control your world</h3><p>Future-ready areas for backups, files, settings, player lists and server logs.</p></article></div>
+    </section>
+    <section class="cta"><div><div class="eyebrow">THE NEXT CHAPTER IS YOURS</div><h2>Ready to build<br>your world?</h2></div><a href="#dashboard" class="button button-primary">Open dashboard <span>↑</span></a></section>
+  </main>
+  <footer><a class="brand" href="#"><span class="brand-mark">A<span>•</span></span><span>ANI<span class="brand-light">HOST</span></span></a><span>MADE FOR PLAYERS · BUILT BY ANI STUDIO</span><span>© <span id="year"></span> ANI HOST</span></footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="script.js"></script>
+</body>
+</html>
