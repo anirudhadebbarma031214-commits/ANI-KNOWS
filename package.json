@@ -1,0 +1,20 @@
+{
+  "name": "ani-host",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Self-hosted Minecraft server control panel and Docker API",
+  "main": "server/backend.js",
+  "scripts": {
+    "start": "node server/backend.js",
+    "dev": "node --watch server/backend.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dockerode": "^4.0.7",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.1.0"
+  }
+}
