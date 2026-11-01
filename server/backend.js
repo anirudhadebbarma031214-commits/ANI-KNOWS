@@ -178,10 +178,10 @@ app.post("/api/servers", async function (req, res) {
   }
 });
 
-app.post("/api/servers/:id/:action", async function (req, res) {
+app.post("/api/servers/:id/:action", async function (req, res, next) {
   const id = req.params.id;
   const action = req.params.action;
-  if (["start", "stop", "restart"].indexOf(action) === -1) return res.status(404).json({ error: "Unknown action." });
+  if (["start", "stop", "restart"].indexOf(action) === -1) return next();
   try {
     const container = await findContainer(id);
     if (!container) return res.status(404).json({ error: "Server not found." });
